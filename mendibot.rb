@@ -1,9 +1,11 @@
 require 'rubygems'
 require 'isaac'
 require "#{File.dirname(__FILE__)}/bot_config"
+require File.join(File.dirname(__FILE__), 'plugins')
 require 'rest-client'
 require 'json'
 require 'date'
+# require 'ruby-debug'
 
 $topics = {}
 
@@ -37,73 +39,26 @@ on :channel do
   service["/chat/messages.json"].post(:message => msg)
 end
 
-on :channel, /^!bitly (.*?) (.*?)$/ do
-  case match[0]
-  when 'shorten' # Get shorten URL
-    begin
-      result = bitly.shorten(match[1]).short_url
-    rescue Exception => e
-      result = "Error: " + e.message
-    end
-  when 'info'
-    begin
-      result = bitly.info(match[1]).long_url
-    rescue Exception => e
-      result = "Error: " + e.message
-    end
-  when 'stats'
-    begin
-      b = bitly.stats(match[1]).stats
-      result = "Clicks: #{b['clicks']}, User clicks: #{b['userClicks']}"
-    rescue Exception => e
-      result = "Error: " + e.message
-    end
-  else
-    result = 'Unknown command. Currently support only shorten, info and stats commands'
-  end
-  msg channel, result
+on :channel, /^!bitly shorten (.*)$/ do
+  msg channel, Plugins::Bitly.process('shorten', match[0])
+end
+
+on :channel, /^!bitly info (.*)$/ do
+  msg channel, Plugins::Bitly.process('info', match[0])
+end
+
+on :channel, /^!bitly stats (.*)$/ do
+  msg channel, Plugins::Bitly.process('stats', match[0])
 end
 
 on :channel, /^!translate (.*?) (.*?)$/ do
-  begin
-    if match[0].include?('|')
-      from = match[0].split('|').first
-      to = match[0].split('|').last
-    else
-      from = translator.detect_language(match[1])['language']
-      to = match[0]
-    end
-    result = entities.decode(translator.translate(from.to_sym, to.to_sym, match[1]))
-  rescue Exception => e
-    result = "Error: " + e.message
-  end
-  msg channel, result
+  msg channel, Plugins::Translate.process(match[0], match[1])
 end
 
-on :channel, /^!twitter (.*?) (.*?)$/ do
-  case match[0]
-  when 'status' # Get user status and try translate it to english
-    begin
-      result = Twitter.user(match[1]).status.text
-      from = translator.detect_language(result)['language']
-      to = 'en'
-      result = entities.decode(translator.translate(from.to_sym, to.to_sym, result)) unless from == to
-    rescue Exception => e
-      result = "Error: " + e.message unless e.class.to_s.include?('Google::Translator') # Ignore translation errors
-    end
-  when 'update' # Update user status, automatically short URLs through bit.ly
-    begin
-      text = match[1]
+on :channel, /^!twitter status (.*)$/ do
+  msg channel, Plugins::Twitter.process('status', match[0])
+end
 
-      URI.extract(text, "http").each{|url| text.sub!(url, bitly.shorten(url).short_url)}
-
-      t = twitter.update(text)
-      result = "http://twitter.com/#{t.user.screen_name}/status/#{t.id}"
-    rescue Exception => e
-      result = "Error: " + e.message
-    end
-  else
-    result = 'Unknown command. Currently support only status and update commands'
-  end
-  msg channel, result
+on :channel, /^!twitter update (.*)$/ do
+  msg channel, Plugins::Twitter.process('update', match[0])
 end
