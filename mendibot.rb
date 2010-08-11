@@ -40,25 +40,25 @@ on :channel do
 end
 
 on :channel, /^!bitly shorten (.*)$/ do
-  msg channel, Plugins::Bitly.process('shorten', match[0])
+  msg channel, Mendibot::Plugins::Bitly.process('shorten', match[0])
 end
 
 on :channel, /^!bitly info (.*)$/ do
-  msg channel, Plugins::Bitly.process('info', match[0])
+  msg channel, Mendibot::Plugins::Bitly.process('info', match[0])
 end
 
 on :channel, /^!bitly stats (.*)$/ do
-  msg channel, Plugins::Bitly.process('stats', match[0])
+  msg channel, Mendibot::Plugins::Bitly.process('stats', match[0])
 end
 
 on :channel, /^!translate (.*?) (.*?)$/ do
-  msg channel, Plugins::Translate.process(match[0], match[1])
+  msg channel, Mendibot::Plugins::Translate.process(match[0], match[1])
 end
 
 on :channel, /^!twitter status (.*)$/ do
-  msg channel, Plugins::Twitter.process('status', match[0])
+  msg channel, Mendibot::Plugins::Twitter.process('status', match[0])
 end
 
 on :channel, /^!twitter update (.*)$/ do
-  msg channel, Plugins::Twitter.process('update', match[0])
+  msg channel, Mendibot::Plugins::Twitter.process('update', match[0])
 end

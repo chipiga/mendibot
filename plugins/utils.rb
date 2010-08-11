@@ -1,10 +1,12 @@
 require 'htmlentities'
 
-module Plugins
-  class Utils
-    class << self
-      def entities
-        @entities ||= HTMLEntities.new
+module Mendibot
+  module Plugins
+    class Utils
+      class << self
+        def entities
+          @entities ||= HTMLEntities.new
+        end
       end
     end
   end
